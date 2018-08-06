@@ -191,7 +191,7 @@
     <input id="filename" placeholder="filename (e.g. lottie.json)" style="background: #FFF; border: 0; padding: 10px 15px; width: 200px; border-radius: 20px;" />
     <button id="btn" type="button" style="background: grey; border: 1px solid #F0F0F0; padding: 10px; color: #FFF; border-radius: 20px;">download pngs</button>
   </div>
-  <div id="lottie" style="width: 360px !important; height: 640px !important"></div>
+  <div id="lottie" style="width: 180px !important; height: 320px !important"></div>
 <script>
 var anim;
 var elem = document.getElementById('lottie');
@@ -203,6 +203,9 @@ let i = 0;
 let canvas;
 
 function render() {
+  if (anim && anim.isLoaded) {
+    anim.destroy();
+  }
   let animData = {
     container: elem,
     renderer: 'canvas',
@@ -223,7 +226,8 @@ function render() {
 
 function loopAndZip() {
   var zip = new JSZip();
-  for (i = 1; i < 38; i++) {
+  var frames = anim.getDuration() * fps;
+  for (i = 1; i < frames; i++) {
     anim.goToAndStop(i * fps);
     let dataURL = canvas
       .toDataURL('image/png')
