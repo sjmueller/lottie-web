@@ -176,6 +176,9 @@
     <script src="js/effects/SliderEffect.js" data-light-skip="true"></script>
     <script src="js/effects/EffectsManagerPlaceholder.js" ></script>
     <script src="js/EffectsManager.js" data-light-skip="true"></script>
+    <script type="text/javascript" src="//stuk.github.io/jszip/dist/jszip.js"></script>
+    <script type="text/javascript" src="//stuk.github.io/jszip-utils/dist/jszip-utils.js"></script>
+    <script type="text/javascript" src="//stuk.github.io/jszip/vendor/FileSaver.js"></script>
     <!-- end Expressions -->
     <!-- endbuild -->
     <script src="js/module.js" data-skip="true"></script>
@@ -184,29 +187,55 @@
 
 </head>
 <body>
-<div id="lottie"></div>
-
+  <div style=" margin: auto; text-align: center; padding: 25px;">
+    <input id="filename" placeholder="filename (e.g. lottie.json)" style="background: #FFF; border: 0; padding: 10px 15px; width: 200px; border-radius: 20px;" />
+    <button id="btn" type="button" style="background: grey; border: 1px solid #F0F0F0; padding: 10px; color: #FFF; border-radius: 20px;">download pngs</button>
+  </div>
+  <div id="lottie" style="width: 360px !important; height: 640px !important"></div>
 <script>
-    var anim;
-    var elem = document.getElementById('lottie');
-    //elem.style.display = 'none';
-    var animData = {
-        container: elem,
-        renderer: 'svg',
-        loop: false,
-        autoplay: false,
-        rendererSettings: {
-            progressiveLoad:false,
-            imagePreserveAspectRatio: 'xMidYMid meet'
-        },
-        path: 'exports/render/data.json'
-    };
-    anim = lottie.loadAnimation(animData);
-    anim.setSubframe(false);
-    anim.addEventListener('DOMLoaded', function(){
-        anim.goToAndStop(10, true);
-    })
+var anim;
+var elem = document.getElementById('lottie');
+var input = document.getElementById('filename');
+var btn = document.getElementById('btn');
+btn.addEventListener('click', () => render(), false);
+const fps = 30;
+let i = 0;
+let canvas;
 
+function render() {
+  let animData = {
+    container: elem,
+    renderer: 'canvas',
+    loop: false,
+    autoplay: false,
+    rendererSettings: {
+      progressiveLoad: false,
+      imagePreserveAspectRatio: 'xMidYMid meet'
+    },
+    path: input.value
+  };
+  anim = lottie.loadAnimation(animData);
+  anim.addEventListener('DOMLoaded', () => {
+    canvas = elem.firstElementChild;
+    loopAndZip();
+  });
+}
+
+function loopAndZip() {
+  var zip = new JSZip();
+  for (i = 1; i < 38; i++) {
+    anim.goToAndStop(i * fps);
+    let dataURL = canvas
+      .toDataURL('image/png')
+      .replace(/^data:image\/(png|jpg);base64,/, '');
+    zip.file(`${input.value.replace(".json", "")}-frame-${i < 10 ? '0' : ''}${i}.png`, dataURL, {
+      base64: true
+    });
+  }
+  zip.generateAsync({ type: 'blob' }).then(function(content) {
+    saveAs(content, `${input.value.replace(".json", "")}-png-sequence.zip`);
+  });
+}
 </script>
 </body>
 </html>
