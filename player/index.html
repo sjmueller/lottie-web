@@ -229,15 +229,26 @@ function loopAndZip() {
   var frames = anim.getDuration() * fps;
   for (i = 1; i < frames; i++) {
     anim.goToAndStop(i * fps);
+    var zeroes;
+    switch (i) {
+      case i < 10: zeroes = '000';
+      case i < 100: zeroes = '00';
+      case i < 1000: zeroes = '0';
+      default: zeroes = '';
+    }
     let dataURL = canvas
       .toDataURL('image/png')
       .replace(/^data:image\/(png|jpg);base64,/, '');
-    zip.file(`${input.value.replace(".json", "")}-frame-${i < 10 ? '0' : ''}${i}.png`, dataURL, {
-      base64: true
-    });
+    zip.file(
+      `${input.value.replace('.json', '')}-frame-${zeroes}${i}.png`,
+      dataURL,
+      {
+        base64: true
+      }
+    );
   }
   zip.generateAsync({ type: 'blob' }).then(function(content) {
-    saveAs(content, `${input.value.replace(".json", "")}-png-sequence.zip`);
+    saveAs(content, `${input.value.replace('.json', '')}-png-sequence.zip`);
   });
 }
 </script>
